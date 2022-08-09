@@ -1,0 +1,77 @@
+2022/08/09
+
+#1 newusbnet can allocate 30 interface
+newusbnet: test code to the usb issue
+Question: Why Ashley says 21 routes if all modems work?
+
+Commands:
+cd /home/ash/usbissue/newusbnet
+rmmod rndis_host
+insmod scullc.ko
+root@ash-Default-string:/home/ash# find -L /sys/bus/usb/devices/ -name "driver" -maxdepth 2 | xargs ls
+ -l | grep -i skele | wc                                                                              
+
+#2 It seems rndis_host are eating some resources, usb buffer?
+Description: Remove and load rndis_host again, number of allocated devices is decreasing
+
+Command:
+
+rmmod rndis_host
+modprobe rndis_host
+root@ash-Default-string:/home/ash# find -L /sys/bus/usb/devices/ -name "driver" -maxdepth 2 | xargs ls
+ -l | grep -i skele | wc                                                                              
+ip address | grep usb
+ip route list
+
+We will see number of allocated devices is decreasing
+
+#3 Reloading of rndis_host module does not produce same error on boot
+Those error like below,
+- Not enough host controller resources for new device state
+- device descriptor read/64, error -32
+- cannot reset (err = -71)
+- unable to enumerate USB device
+- New network devices stop showing
+
+#4 Take /sys/bus/usb/devices/1-4.1:1.2/ for example, rndis_host can not drive it, but newusbnet can
+In case of rndis_host driver
+oot@ash-Default-string:/home/ash# ls -l /sys/bus/usb/devices/1-4.1:1.2/              
+otal 0                                                                               
+rw-r--r-- 1 root root 4096 Aug  9 04:18 authorized                                   
+r--r--r-- 1 root root 4096 Aug  9 04:18 bAlternateSetting                            
+r--r--r-- 1 root root 4096 Aug  8 21:57 bInterfaceClass                              
+r--r--r-- 1 root root 4096 Aug  8 21:57 bInterfaceNumber                             
+r--r--r-- 1 root root 4096 Aug  9 04:18 bInterfaceProtocol                           
+r--r--r-- 1 root root 4096 Aug  9 04:18 bInterfaceSubClass                           
+r--r--r-- 1 root root 4096 Aug  8 21:57 bNumEndpoints                                
+rwxr-xr-x 3 root root    0 Aug  9 04:18 ep_02                                        
+rwxr-xr-x 3 root root    0 Aug  9 04:18 ep_83                                        
+r--r--r-- 1 root root 4096 Aug  9 04:18 modalias                                     
+rwxr-xr-x 2 root root    0 Aug  9 04:18 power                                        
+rwxrwxrwx 1 root root    0 Aug  8 21:57 subsystem -> ../../../../../../../../bus/usb 
+r--r--r-- 1 root root 4096 Aug  9 04:18 supports_autosuspend                         
+rw-r--r-- 1 root root 4096 Aug  8 21:57 uevent                                       
+
+In case of newusbnet driver
+root@ash-Default-string:/sys/bus/usb/devices# ls -l 1-4.1:1.2/
+total 0
+-rw-r--r-- 1 root root 4096 Aug  9 04:18 authorized
+-r--r--r-- 1 root root 4096 Aug  9 04:18 bAlternateSetting
+-r--r--r-- 1 root root 4096 Aug  8 21:57 bInterfaceClass
+-r--r--r-- 1 root root 4096 Aug  8 21:57 bInterfaceNumber
+-r--r--r-- 1 root root 4096 Aug  9 04:18 bInterfaceProtocol
+-r--r--r-- 1 root root 4096 Aug  9 04:18 bInterfaceSubClass
+-r--r--r-- 1 root root 4096 Aug  8 21:57 bNumEndpoints
+lrwxrwxrwx 1 root root    0 Aug  9 09:56 driver -> ../../../../../../../../bus/usb/drivers/skeleton
+drwxr-xr-x 3 root root    0 Aug  9 04:18 ep_02
+drwxr-xr-x 3 root root    0 Aug  9 04:18 ep_83
+-r--r--r-- 1 root root 4096 Aug  9 04:18 modalias
+drwxr-xr-x 2 root root    0 Aug  9 04:18 power
+lrwxrwxrwx 1 root root    0 Aug  8 21:57 subsystem -> ../../../../../../../../bus/usb
+-r--r--r-- 1 root root 4096 Aug  9 04:18 supports_autosuspend
+-rw-r--r-- 1 root root 4096 Aug  8 21:57 uevent
+
+Analyse: However, we can not see any error log for missing devices.
+
+
+
