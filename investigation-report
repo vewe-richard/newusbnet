@@ -75,3 +75,15 @@ Analyse: However, we can not see any error log for missing devices.
 
 
 
+root@ash-Default-string:/home/ash# find -L /sys/bus/usb/devices/ -name "driver" -maxdepth 2 | xargs ls -l | grep -i rnd | wc                                                                              
+
+
+2022/08/10
+
+- Let newusbnet eat some interface to check those unactivated ports can be drived by rdns_host
+- Let newusbnet eat some endpoints
+- Debug usbnet/cdc_ether, Can these driver be used to mask some endpoints?
+
+
+
+
