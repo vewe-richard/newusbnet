@@ -11,10 +11,14 @@
 /* Define these values to match your devices */
 #define USB_SKEL_VENDOR_ID	0x0b95
 #define USB_SKEL_PRODUCT_ID	0x1790
+#define USB_RNDIS_VENDOR_ID     0x1bbb
+#define USB_RNDIS_PRODUCT_ID    0x0196
+
 
 /* table of devices that work with this driver */
 static struct usb_device_id skel_table [] = {
 	{ USB_DEVICE(USB_SKEL_VENDOR_ID, USB_SKEL_PRODUCT_ID) },
+	{ USB_DEVICE(USB_RNDIS_VENDOR_ID, USB_RNDIS_PRODUCT_ID) },
 	{ }					/* Terminating entry */
 };
 MODULE_DEVICE_TABLE (usb, skel_table);
@@ -229,6 +233,22 @@ static int skel_probe(struct usb_interface *interface, const struct usb_device_i
 
 	dev->udev = usb_get_dev(interface_to_usbdev(interface));
 	dev->interface = interface;
+
+	printk(KERN_WARNING "num_altsetting, %d", interface->num_altsetting);
+	iface_desc = interface->cur_altsetting; //struct usb_host_interface
+	                                        //desc -> real descriptor
+						//endpoints
+						//
+	printk(KERN_WARNING "interface no %x endpoints %d interface %x", iface_desc->desc.bInterfaceNumber, iface_desc->desc.bNumEndpoints, iface_desc->desc.iInterface);
+	printk(KERN_WARNING "class %x subclass %x protocol %x", iface_desc->desc.bInterfaceClass, iface_desc->desc.bInterfaceSubClass, iface_desc->desc.bInterfaceProtocol);
+
+	for (i = 0; i < iface_desc->desc.bNumEndpoints; ++i) {
+		endpoint = &iface_desc->endpoint[i].desc;
+		printk(KERN_WARNING "  ep addr %x attr %x maxsize %d", endpoint->bEndpointAddress, endpoint->bmAttributes, endpoint->wMaxPacketSize);
+	}
+
+
+
 #if 0
 	/* set up the endpoint information */
 	/* use only the first bulk-in and bulk-out endpoints */

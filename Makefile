@@ -22,8 +22,8 @@ obj-m	:= scullc.o
 
 else
 
-#KERNELDIR ?= /lib/modules/$(shell uname -r)/build
-KERNELDIR ?= /home/richard/work/knet/linux-stable
+KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+#KERNELDIR ?= /home/richard/work/knet/linux-stable
 PWD       := $(shell pwd)
 
 modules:
