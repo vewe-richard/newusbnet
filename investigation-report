@@ -86,4 +86,10 @@ root@ash-Default-string:/home/ash# find -L /sys/bus/usb/devices/ -name "driver" 
 
 
 
+2022/08/11
+- usb_modeswitch  
+
+2022/08/12
+- occupy adb interface
+
 

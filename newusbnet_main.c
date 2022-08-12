@@ -46,7 +46,7 @@ static void skel_delete(struct kref *kref)
 	struct usb_skel *dev = to_skel_dev(kref);
 
 	usb_put_dev(dev->udev);
-	kfree (dev->bulk_in_buffer);
+	//jiangjqian kfree (dev->bulk_in_buffer);
 	kfree (dev);
 }
 
@@ -219,7 +219,7 @@ static int skel_probe(struct usb_interface *interface, const struct usb_device_i
 	struct usb_skel *dev = NULL;
 	struct usb_host_interface *iface_desc;
 	struct usb_endpoint_descriptor *endpoint;
-	size_t buffer_size;
+	//size_t buffer_size;
 	int i;
 	int retval = -ENOMEM;
 
@@ -239,52 +239,21 @@ static int skel_probe(struct usb_interface *interface, const struct usb_device_i
 	                                        //desc -> real descriptor
 						//endpoints
 						//
-	printk(KERN_WARNING "interface no %x endpoints %d interface %x", iface_desc->desc.bInterfaceNumber, iface_desc->desc.bNumEndpoints, iface_desc->desc.iInterface);
-	printk(KERN_WARNING "class %x subclass %x protocol %x", iface_desc->desc.bInterfaceClass, iface_desc->desc.bInterfaceSubClass, iface_desc->desc.bInterfaceProtocol);
+	printk(KERN_WARNING "interface no %x endpoints %d interface %x", 
+			iface_desc->desc.bInterfaceNumber, 
+			iface_desc->desc.bNumEndpoints, 
+			iface_desc->desc.iInterface);
+	printk(KERN_WARNING "class %x subclass %x protocol %x", iface_desc->desc.bInterfaceClass, 
+			iface_desc->desc.bInterfaceSubClass, 
+			iface_desc->desc.bInterfaceProtocol);
 
 	for (i = 0; i < iface_desc->desc.bNumEndpoints; ++i) {
 		endpoint = &iface_desc->endpoint[i].desc;
-		printk(KERN_WARNING "  ep addr %x attr %x maxsize %d", endpoint->bEndpointAddress, endpoint->bmAttributes, endpoint->wMaxPacketSize);
+		printk(KERN_WARNING "  ep addr %x attr %x maxsize %d", 
+				endpoint->bEndpointAddress, 
+				endpoint->bmAttributes, 
+				endpoint->wMaxPacketSize);
 	}
-
-
-
-#if 0
-	/* set up the endpoint information */
-	/* use only the first bulk-in and bulk-out endpoints */
-	iface_desc = interface->cur_altsetting;
-	for (i = 0; i < iface_desc->desc.bNumEndpoints; ++i) {
-		endpoint = &iface_desc->endpoint[i].desc;
-
-		if (!dev->bulk_in_endpointAddr &&
-		    (endpoint->bEndpointAddress & USB_DIR_IN) &&
-		    ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-					== USB_ENDPOINT_XFER_BULK)) {
-			/* we found a bulk in endpoint */
-			buffer_size = endpoint->wMaxPacketSize;
-			dev->bulk_in_size = buffer_size;
-			dev->bulk_in_endpointAddr = endpoint->bEndpointAddress;
-			dev->bulk_in_buffer = kmalloc(buffer_size, GFP_KERNEL);
-			if (!dev->bulk_in_buffer) {
-				pr_err("Could not allocate bulk_in_buffer");
-				goto error;
-			}
-		}
-
-		if (!dev->bulk_out_endpointAddr &&
-		    !(endpoint->bEndpointAddress & USB_DIR_IN) &&
-		    ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-					== USB_ENDPOINT_XFER_BULK)) {
-			/* we found a bulk out endpoint */
-			dev->bulk_out_endpointAddr = endpoint->bEndpointAddress;
-		}
-	}
-	if (!(dev->bulk_in_endpointAddr && dev->bulk_out_endpointAddr)) {
-		pr_err("Could not find both bulk-in and bulk-out endpoints");
-		goto error;
-	}
-#else
-#endif
 
 	/* save our data pointer in this interface device */
 	usb_set_intfdata(interface, dev);
@@ -296,6 +265,21 @@ static int skel_probe(struct usb_interface *interface, const struct usb_device_i
 		/* something prevented us from registering this driver */
 		pr_err("Not able to get a minor for this device.");
 		usb_set_intfdata(interface, NULL);
+		goto error;
+	}
+#else
+
+	//iface_desc->desc.bInterfaceNumber, 
+	if (iface_desc->desc.bInterfaceClass == 0xff && iface_desc->desc.bInterfaceSubClass == 0xff)
+	{
+		//mask out this interface
+		printk(KERN_WARNING "usb interface mask out");
+		interface->minor = -1;
+	}
+	else
+	{
+		retval = -EINVAL;
+		printk(KERN_WARNING "leave this usb interface for other driver");
 		goto error;
 	}
 #endif
