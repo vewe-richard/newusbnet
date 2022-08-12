@@ -270,7 +270,7 @@ static int skel_probe(struct usb_interface *interface, const struct usb_device_i
 #else
 
 	//iface_desc->desc.bInterfaceNumber, 
-	if (iface_desc->desc.bInterfaceClass == 0xff && iface_desc->desc.bInterfaceSubClass == 0xff)
+	if (iface_desc->desc.bInterfaceClass == 0xff && iface_desc->desc.bInterfaceSubClass == 0x42)
 	{
 		//mask out this interface
 		printk(KERN_WARNING "usb interface mask out");
